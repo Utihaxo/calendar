@@ -33,18 +33,23 @@
 </head>
 <body>
     <div class="grid">
-        <div class="event red" style="grid-column: 3; grid-row: 3 / span 4" draggable="true">EVENT 1</div>
-        <div class="event green" style="grid-column: 1; grid-row: 8 / span 4" draggable="true">EVENT 2</div>
-        <div class="event yellow" style="grid-column: 2; grid-row: 13 / span 4" draggable="true">EVENT 3</div>
+        <div class="event red" style="grid-area: 3 / 3 / span 4" draggable="true">EVENT 1</div>
+        <div class="event green" style="grid-area: 8 / 1 / span 4" draggable="true">EVENT 2</div>
+        <div class="event yellow" style="grid-area: 1 / 2 / span 3" draggable="true">EVENT 3</div>
     </div>
 
     <script>
         const events = document.querySelectorAll('.event');
         let draggedEvent = null;
+        let initialTopBorder = 0;
 
         events.forEach(event => {
             event.addEventListener('dragstart', (e) => {
                 draggedEvent = e.target;
+                const elementRect = draggedEvent.getBoundingClientRect();
+                initialTopBorder = elementRect.top;
+                mouseYInitial = e.clientY;
+
                 setTimeout(() => {
                     e.target.classList.add('placeholder');
                 }, 0);
@@ -52,6 +57,7 @@
 
             event.addEventListener('dragend', (e) => {
                 e.target.classList.remove('placeholder');
+                draggedEvent = null;
             });
         });
 
@@ -64,25 +70,46 @@
         grid.addEventListener('drop', (e) => {
             e.preventDefault();
             if (draggedEvent) {
-                // Calculate the new grid position
-                const rect = grid.getBoundingClientRect();
-                const columnWidth = rect.width / 4;
+                // Calculate the new grid position based on the mouse position
+                const rectGrid = grid.getBoundingClientRect();
                 const rowHeight = 40; // Height of each row (fixed in this case)
 
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                // console.log(`Wysokość rectGRID: ${JSON.stringify(rectGrid)}`);
 
+
+                // Calculate the difference between the mouse y position and the element's top border
+                const elementRect = draggedEvent.getBoundingClientRect();
+                console.log(`Element dragowany: ${JSON.stringify(elementRect)}`);
+
+                const mouseY = e.clientY;
+                const difference = mouseY - mouseYInitial;
+                console.log(`Mysz Y / Mouse Y initial: ${JSON.stringify(mouseY)} / ${mouseYInitial}`);
+
+                // Get the top border position of the dragged element relative to the grid
+                const elementTopRelativeToGrid = elementRect.top - rectGrid.top;
+                
+                // Calculate the new row using the top border position and the difference
+                let newRow = Math.ceil((elementTopRelativeToGrid + difference) / rowHeight);
+
+                console.log(`Wysokość rect: ${JSON.stringify(newRow)}`);
+
+
+
+                
+                // Calculate the new column based on mouse position
+                const x = e.clientX - rectGrid.left;
+                const columnWidth = rectGrid.width / 4;
                 const newColumn = Math.ceil(x / columnWidth);
-                const newRow = Math.ceil(y / rowHeight);
 
+                // Get the span from the dragged element's current grid-row
                 const spanRows = Number(draggedEvent.style.gridRow.split('/ span ')[1]);
 
-                // Update the dragged event's grid position
+                // Update the dragged event's grid position using the newRow as the starting row
                 draggedEvent.style.gridColumn = newColumn;
                 draggedEvent.style.gridRow = `${newRow} / span ${spanRows}`;
 
-                // Log the new grid properties
-                console.log(`Grid Column: ${newColumn}, Grid Row: ${newRow}, Span: ${spanRows}`);
+                // Log the new grid properties including the event name
+                console.log(`Element: ${draggedEvent.textContent.trim()}, Grid Column: ${newColumn}, Grid Row: ${newRow}, Span: ${spanRows}`);
             }
         });
     </script>
