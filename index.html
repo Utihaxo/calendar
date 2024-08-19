@@ -42,13 +42,14 @@
         const events = document.querySelectorAll('.event');
         let draggedEvent = null;
         let initialTopBorder = 0;
+        let mouseYInitial = 0;
 
         events.forEach(event => {
             event.addEventListener('dragstart', (e) => {
                 draggedEvent = e.target;
                 const elementRect = draggedEvent.getBoundingClientRect();
-                initialTopBorder = elementRect.top;
-                mouseYInitial = e.clientY;
+                initialTopBorder = elementRect.top + window.scrollY; // Include scroll position
+                mouseYInitial = e.clientY + window.scrollY; // Include scroll position
 
                 setTimeout(() => {
                     e.target.classList.add('placeholder');
@@ -74,28 +75,16 @@
                 const rectGrid = grid.getBoundingClientRect();
                 const rowHeight = 40; // Height of each row (fixed in this case)
 
-                // console.log(`Wysokość rectGRID: ${JSON.stringify(rectGrid)}`);
-
-
                 // Calculate the difference between the mouse y position and the element's top border
-                const elementRect = draggedEvent.getBoundingClientRect();
-                console.log(`Element dragowany: ${JSON.stringify(elementRect)}`);
-
-                const mouseY = e.clientY;
+                const mouseY = e.clientY + window.scrollY; // Include scroll position
                 const difference = mouseY - mouseYInitial;
-                console.log(`Mysz Y / Mouse Y initial: ${JSON.stringify(mouseY)} / ${mouseYInitial}`);
 
                 // Get the top border position of the dragged element relative to the grid
-                const elementTopRelativeToGrid = elementRect.top - rectGrid.top;
+                const elementTopRelativeToGrid = initialTopBorder - rectGrid.top - window.scrollY; // Include scroll position
                 
                 // Calculate the new row using the top border position and the difference
                 let newRow = Math.ceil((elementTopRelativeToGrid + difference) / rowHeight);
 
-                console.log(`Wysokość rect: ${JSON.stringify(newRow)}`);
-
-
-
-                
                 // Calculate the new column based on mouse position
                 const x = e.clientX - rectGrid.left;
                 const columnWidth = rectGrid.width / 4;
