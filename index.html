@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(20, 40px);
+            gap: 10px;
+        }
+        .event {
+            cursor: move;
+            padding: 10px;
+            color: white;
+            text-align: center;
+        }
+        .red {
+            background-color: red;
+        }
+        .green {
+            background-color: green;
+        }
+        .yellow {
+            background-color: yellow;
+        }
+        .placeholder {
+            background-color: lightgray;
+            border: 2px dashed #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid">
+        <div class="event red" style="grid-column: 3; grid-row: 3 / span 4" draggable="true">EVENT 1</div>
+        <div class="event green" style="grid-column: 1; grid-row: 8 / span 4" draggable="true">EVENT 2</div>
+        <div class="event yellow" style="grid-column: 2; grid-row: 13 / span 4" draggable="true">EVENT 3</div>
+    </div>
+
+    <script>
+        const events = document.querySelectorAll('.event');
+        let draggedEvent = null;
+
+        events.forEach(event => {
+            event.addEventListener('dragstart', (e) => {
+                draggedEvent = e.target;
+                setTimeout(() => {
+                    e.target.classList.add('placeholder');
+                }, 0);
+            });
+
+            event.addEventListener('dragend', (e) => {
+                e.target.classList.remove('placeholder');
+            });
+        });
+
+        const grid = document.querySelector('.grid');
+
+        grid.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        grid.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (draggedEvent) {
+                // Calculate the new grid position
+                const rect = grid.getBoundingClientRect();
+                const columnWidth = rect.width / 4;
+                const rowHeight = 40; // Height of each row (fixed in this case)
+
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const newColumn = Math.ceil(x / columnWidth);
+                const newRow = Math.ceil(y / rowHeight);
+
+                const spanRows = Number(draggedEvent.style.gridRow.split('/ span ')[1]);
+
+                // Update the dragged event's grid position
+                draggedEvent.style.gridColumn = newColumn;
+                draggedEvent.style.gridRow = `${newRow} / span ${spanRows}`;
+
+                // Log the new grid properties
+                console.log(`Grid Column: ${newColumn}, Grid Row: ${newRow}, Span: ${spanRows}`);
+            }
+        });
+    </script>
+</body>
+</html>
