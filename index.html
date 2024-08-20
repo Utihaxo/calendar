@@ -7,7 +7,7 @@
         .grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(20, 40px);
+            grid-template-rows: repeat(20, 40px); /* 20 rows with a height of 40px */
             gap: 0;
         }
         .event {
@@ -74,6 +74,7 @@
                 // Calculate the new grid position based on the mouse position
                 const rectGrid = grid.getBoundingClientRect();
                 const rowHeight = 40; // Height of each row (fixed in this case)
+                const totalRows = 20; // Total rows in the grid
 
                 // Calculate the difference between the mouse y position and the element's top border
                 const mouseY = e.clientY + window.scrollY; // Include scroll position
@@ -85,13 +86,23 @@
                 // Calculate the new row using the top border position and the difference
                 let newRow = Math.ceil((elementTopRelativeToGrid + difference) / rowHeight);
 
+                // Get the span from the dragged element's current grid-row
+                const spanRows = Number(draggedEvent.style.gridRow.split('/ span ')[1]);
+
+                // Prevent the top of the element from going out of bounds (can't be less than row 1)
+                if (newRow < 1) {
+                    newRow = 1;
+                }
+
+                // Prevent the bottom of the element from going out of bounds
+                if (newRow + spanRows - 1 > totalRows) {
+                    newRow = totalRows - spanRows + 1;
+                }
+
                 // Calculate the new column based on mouse position
                 const x = e.clientX - rectGrid.left;
                 const columnWidth = rectGrid.width / 4;
                 const newColumn = Math.ceil(x / columnWidth);
-
-                // Get the span from the dragged element's current grid-row
-                const spanRows = Number(draggedEvent.style.gridRow.split('/ span ')[1]);
 
                 // Update the dragged event's grid position using the newRow as the starting row
                 draggedEvent.style.gridColumn = newColumn;
